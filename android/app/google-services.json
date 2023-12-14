@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "586034724097",
+    "firebase_url": "https://laporcepat-c2f3b-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "laporcepat-c2f3b",
+    "storage_bucket": "laporcepat-c2f3b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586034724097:android:9721b0e15c7419085d6f00",
+        "android_client_info": {
+          "package_name": "com.example.laporcepat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbZdAvIPk8lvBQKXvsIiF0fM8fMAIbjI0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
