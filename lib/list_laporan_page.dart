@@ -49,6 +49,8 @@ class _ListLaporanPageState extends State<ListLaporanPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('userid');
+    print(widget.userId);
     return Column(
       children: [
         Container(
@@ -93,6 +95,8 @@ class _ListLaporanPageState extends State<ListLaporanPage> {
                   return Text('Error: ${snapshot.error}');
                 } else if (snapshot.data!.isNotEmpty) {
                   dataLaporan = snapshot.data!;
+                  print('dataLaporan');
+                  print(dataLaporan);
                   return ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -109,6 +113,8 @@ class _ListLaporanPageState extends State<ListLaporanPage> {
                         pengawas: value?['pengawas'] ?? '',
                         status: value?['status'] ?? '',
                         tglLapor: value?['tgl_lapor'] ?? '',
+                        role: value?['role'] ?? '',
+                        nama: value?['nama'] ?? '',
                         laporanId: key,
                       );
 
@@ -134,8 +140,10 @@ class _ListLaporanPageState extends State<ListLaporanPage> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => LaporanDetailPage(
-                                          laporanId: laporan.laporanId))).then(
-                                  (result) {
+                                          laporanId: laporan.laporanId,
+                                          userId: laporan.pengawas,
+                                          nama: laporan.nama,
+                                          role: laporan.role))).then((result) {
                                 // This function will be called when the user pops the LaporanPage.
                                 _getDataLaporan();
                                 setState(() {});

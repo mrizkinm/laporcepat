@@ -29,7 +29,6 @@ class AddLaporanPage extends StatefulWidget {
 }
 
 class _AddLaporanPageState extends State<AddLaporanPage> {
-  DataUsers? loadedLogin;
   String? currentStatus;
   final _formKey = GlobalKey<FormBuilderState>();
   bool counterRotate = false;
@@ -48,6 +47,7 @@ class _AddLaporanPageState extends State<AddLaporanPage> {
   File? _image;
   bool isLoading = false;
   final TextEditingController searchController = TextEditingController();
+  String? token = '';
 
   Marker buildPin(LatLng point) => Marker(
         point: point,
@@ -71,6 +71,7 @@ class _AddLaporanPageState extends State<AddLaporanPage> {
   @override
   void initState() {
     super.initState();
+    getToken();
     currentStatus = widget.status;
     if (currentStatus == 'ringan') {
       colorStatus = Colors.green;
@@ -79,8 +80,13 @@ class _AddLaporanPageState extends State<AddLaporanPage> {
     } else {
       colorStatus = Colors.red;
     }
-    _loadStoredValue();
     _checkPermission();
+  }
+
+  getToken() async {
+    token = await FirebaseMessaging.instance.getToken();
+    // Call setState to trigger a rebuild with the updated token value
+    setState(() {});
   }
 
   Future<void> _pickImages(int source) async {
@@ -165,16 +171,8 @@ class _AddLaporanPageState extends State<AddLaporanPage> {
         LatLng(latitude, longitude), 14.0); // Use the desired zoom level
   }
 
-  Future<void> _loadStoredValue() async {
-    StorageService storageService = StorageService();
-    DataUsers? result = await storageService.loadData('dataLogin');
-    setState(() {
-      loadedLogin = result;
-    });
-  }
-
-  Future<bool> sendNotification(
-      String title, String body, String laporanId) async {
+  Future<bool> sendNotification(String title, String body, String nama,
+      String role, String laporanId) async {
     final Map<String, dynamic> message = {
       'to': '/topics/$topic',
       'priority': 'high',
@@ -190,7 +188,9 @@ class _AddLaporanPageState extends State<AddLaporanPage> {
         'status': currentStatus,
         'laporanId': laporanId,
         'type': 1,
-        'userId': loadedLogin?.userId
+        'userId': token,
+        'nama': nama,
+        'role': role
       }
     };
 
@@ -293,18 +293,22 @@ class _AddLaporanPageState extends State<AddLaporanPage> {
       'lokasi_lng': latlng.longitude,
       'pelaku': value['pelaku'],
       'deskripsi': value['deskripsi'],
-      'pengawas': loadedLogin?.userId
+      'nama': value['nama'],
+      'pangkat': value['pangkat'],
+      'role': 'pengawas',
+      'pengawas': token
     };
     var insertResponse = await firebaseLaporanService.insertData(dataInsert);
     if (insertResponse != null) {
       await _sendImagesToBackend(insertResponse);
-      String title = 'Laporan dari ${loadedLogin!.name}';
+      String title = 'Laporan dari ${value['nama']}';
       String body = """
 Lokasi: ${value['lokasi']}
 Deskripsi: ${value['deskripsi']}
 """;
       await FirebaseMessaging.instance.subscribeToTopic(insertResponse);
-      await sendNotification(title, body, insertResponse);
+      await sendNotification(
+          title, body, value['nama'], value['role'], insertResponse);
       showToast('Laporan berhasil dikirim');
       Navigator.pop(context);
     } else {
@@ -415,6 +419,54 @@ Deskripsi: ${value['deskripsi']}
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Text(
+                          'Nama',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        FormBuilderTextField(
+                            name: 'nama',
+                            validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(),
+                            ]),
+                            decoration: const InputDecoration(
+                                hintText: 'Masukkan nama',
+                                border: InputBorder.none,
+                                fillColor: Color(0xfff3f3f4),
+                                filled: true))
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Text(
+                          'Pangkat',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        FormBuilderTextField(
+                            name: 'pangkat',
+                            validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(),
+                            ]),
+                            decoration: const InputDecoration(
+                                hintText: 'Masukkan pangkat',
+                                border: InputBorder.none,
+                                fillColor: Color(0xfff3f3f4),
+                                filled: true))
                       ],
                     ),
                     const SizedBox(height: 10),

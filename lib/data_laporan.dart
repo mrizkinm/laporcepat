@@ -8,6 +8,8 @@ class DataLaporan {
   String status;
   String tglLapor;
   String laporanId;
+  String role;
+  String nama;
 
   DataLaporan(
       {required this.deskripsi,
@@ -18,5 +20,7 @@ class DataLaporan {
       required this.pengawas,
       required this.status,
       required this.tglLapor,
-      required this.laporanId});
+      required this.laporanId,
+      required this.role,
+      required this.nama});
 }

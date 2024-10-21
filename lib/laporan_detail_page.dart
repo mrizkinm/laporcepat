@@ -18,10 +18,18 @@ import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LaporanDetailPage extends StatefulWidget {
-  const LaporanDetailPage({Key? key, required this.laporanId})
+  const LaporanDetailPage(
+      {Key? key,
+      required this.laporanId,
+      required this.userId,
+      required this.nama,
+      required this.role})
       : super(key: key);
 
   final String laporanId;
+  final String userId;
+  final String nama;
+  final String role;
 
   @override
   _LaporanDetailPageState createState() => _LaporanDetailPageState();
@@ -30,7 +38,6 @@ class LaporanDetailPage extends StatefulWidget {
 class _LaporanDetailPageState extends State<LaporanDetailPage> {
   final firebaseLaporanService = FirebaseLaporanService();
   final firebaseChatService = FirebaseChatService();
-  DataUsers? loadedLogin;
   bool isLoading = true;
   bool counterRotate = false;
   List<Marker> customMarkers = <Marker>[];
@@ -84,8 +91,7 @@ class _LaporanDetailPageState extends State<LaporanDetailPage> {
 
   Stream<Map<String, dynamic>> _getDataChat() {
     print('wp');
-    return firebaseChatService.getDataChat(
-        loadedLogin!.userId, widget.laporanId);
+    return firebaseChatService.getDataChat(widget.userId, widget.laporanId);
   }
 
   Future<void> _gotoMaps(lat, lng) async {
@@ -109,13 +115,12 @@ class _LaporanDetailPageState extends State<LaporanDetailPage> {
       var dataInsert = {
         'tgl_chat': formattedDate,
         'text': messageController.text,
-        'userId': loadedLogin?.userId,
-        'name': loadedLogin?.name,
+        'userId': widget.userId,
+        'name': widget.nama,
         'laporanId': widget.laporanId,
-        'role': loadedLogin?.role
+        'role': widget.role
       };
-      String title =
-          'Pesan dari ${loadedLogin?.name} (${loadedLogin?.role.toUpperCase()})';
+      String title = 'Pesan dari ${widget.nama} (${widget.role.toUpperCase()})';
       String body = messageController.text;
       String key = dataLaporan.keys.elementAt(0);
       var value = dataLaporan[key];
@@ -160,7 +165,7 @@ class _LaporanDetailPageState extends State<LaporanDetailPage> {
         'status': currentStatus,
         'laporanId': widget.laporanId,
         'type': 2,
-        'userId': loadedLogin?.userId
+        'userId': widget.userId
       }
     };
 
@@ -187,7 +192,7 @@ class _LaporanDetailPageState extends State<LaporanDetailPage> {
       required String text,
       required String time,
       required String role}) {
-    final isMe = sender == loadedLogin?.name;
+    final isMe = sender == widget.nama;
 
     return Column(
       crossAxisAlignment:
@@ -326,36 +331,7 @@ class _LaporanDetailPageState extends State<LaporanDetailPage> {
                 }
               }),
         ),
-        body: FutureBuilder<DataUsers?>(
-          future: _loadStoredValue(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // If the Future is still running, show a loading indicator
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              // If there's an error, display an error message
-              return Text('Error: ${snapshot.error}');
-            } else if (snapshot.data != null) {
-              // If the data has been successfully loaded, use it
-              loadedLogin = snapshot.data;
-              return _buildMainContent();
-            } else {
-              // If the data is null, handle it according to your requirements
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.warning, color: Colors.orange, size: 50),
-                    SizedBox(height: 10),
-                    Text('Tidak ada data',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 10),
-                  ],
-                ),
-              );
-            }
-          },
-        ));
+        body: _buildMainContent());
   }
 
   Widget _buildMainContent() {
@@ -393,6 +369,8 @@ class _LaporanDetailPageState extends State<LaporanDetailPage> {
                             pengawas: value['pengawas'] ?? '',
                             status: value['status'] ?? '',
                             tglLapor: value['tgl_lapor'] ?? '',
+                            role: value['role'] ?? '',
+                            nama: value['nama'] ?? '',
                             laporanId: key,
                           );
                           customMarkers = [

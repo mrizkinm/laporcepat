@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:laporcepat/add_laporan_page.dart';
 import 'package:laporcepat/data_users.dart';
@@ -15,17 +16,19 @@ class PengawasPage extends StatefulWidget {
 
 class _PengawasPageState extends State<PengawasPage> {
   final firebaseUsersService = FirebaseUsersService();
-  DataUsers? loadedLogin;
   final colorAccent = const Color(0xff060e61);
+  String? token = '';
 
   @override
   void initState() {
     super.initState();
+    getToken();
   }
 
-  Future<DataUsers?> _loadStoredValue() async {
-    StorageService storageService = StorageService();
-    return storageService.loadData('dataLogin');
+  getToken() async {
+    token = await FirebaseMessaging.instance.getToken();
+    // Call setState to trigger a rebuild with the updated token value
+    setState(() {});
   }
 
   // Stream<Map<String, dynamic>> _getDataLaporan() {
@@ -87,36 +90,7 @@ class _PengawasPageState extends State<PengawasPage> {
               ),
             ),
             centerTitle: true),
-        body: FutureBuilder<DataUsers?>(
-          future: _loadStoredValue(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // If the Future is still running, show a loading indicator
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              // If there's an error, display an error message
-              return Text('Error: ${snapshot.error}');
-            } else if (snapshot.data != null) {
-              // If the data has been successfully loaded, use it
-              loadedLogin = snapshot.data;
-              return _buildMainContent();
-            } else {
-              // If the data is null, handle it according to your requirements
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.warning, color: Colors.orange, size: 50),
-                    SizedBox(height: 10),
-                    Text('Tidak ada data',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 10),
-                  ],
-                ),
-              );
-            }
-          },
-        ));
+        body: _buildMainContent());
   }
 
   Widget _buildMainContent() {
@@ -128,9 +102,8 @@ class _PengawasPageState extends State<PengawasPage> {
               Container(
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-                  child: Text(
-                      'Hai, ${loadedLogin?.name} (${loadedLogin?.role.toUpperCase()})',
-                      style: const TextStyle(
+                  child: const Text('Hai Pengguna',
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ))),
@@ -154,7 +127,7 @@ class _PengawasPageState extends State<PengawasPage> {
                   ],
                 ),
               ),
-              ListLaporanPage(userId: loadedLogin!.userId)
+              ListLaporanPage(userId: token!)
             ]),
           ),
         ),
@@ -163,7 +136,7 @@ class _PengawasPageState extends State<PengawasPage> {
           padding: const EdgeInsets.all(10),
           child: ElevatedButton(
             onPressed: () {
-              _logout();
+              _login();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: colorAccent,
@@ -173,7 +146,7 @@ class _PengawasPageState extends State<PengawasPage> {
               ),
             ),
             child: const Text(
-              'Logout',
+              'Login Pejabat',
               style: TextStyle(
                 color: Colors.white, // Set your desired text color
               ),
@@ -184,11 +157,8 @@ class _PengawasPageState extends State<PengawasPage> {
     );
   }
 
-  void _logout() async {
-    await firebaseUsersService.updateLogoutStatus(loadedLogin!.userId);
-    StorageService storageService = StorageService();
-    await storageService.removeData('dataLogin');
-    await Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => LoginPage()));
+  void _login() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 }

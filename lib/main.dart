@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laporcepat/data_users.dart';
-import 'package:laporcepat/home_page.dart';
 import 'package:laporcepat/laporan_detail_page.dart';
-import 'package:laporcepat/login_page.dart';
+import 'package:laporcepat/pejabat_page.dart';
+import 'package:laporcepat/pengawas_page.dart';
 import 'package:laporcepat/storage_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -118,8 +118,11 @@ class _MyAppState extends State<MyApp> {
     debugPrint("Data message opened: ${message.data}");
     if (message.data.containsKey('laporanId')) {
       navigatorKey.currentState!.push(MaterialPageRoute(
-          builder: (context) =>
-              LaporanDetailPage(laporanId: message.data['laporanId'])));
+          builder: (context) => LaporanDetailPage(
+              laporanId: message.data['laporanId'],
+              userId: message.data['userId'],
+              nama: message.data['nama'],
+              role: message.data['role'])));
     }
   }
 
@@ -184,8 +187,11 @@ class _MyAppState extends State<MyApp> {
       }
       if (payloadMap.containsKey('laporanId')) {
         navigatorKey.currentState!.push(MaterialPageRoute(
-            builder: (context) =>
-                LaporanDetailPage(laporanId: payloadMap['laporanId'])));
+            builder: (context) => LaporanDetailPage(
+                laporanId: payloadMap['laporanId'],
+                userId: payloadMap['userId'],
+                nama: payloadMap['nama'],
+                role: payloadMap['role'])));
       }
     }
   }
@@ -234,9 +240,9 @@ class _MyAppState extends State<MyApp> {
             // If the data has been successfully loaded, use it
             loadedLogin = snapshot.data;
             _configureFCMListeners();
-            return const HomePage();
+            return const PejabatPage();
           } else {
-            return const LoginPage();
+            return const PengawasPage();
           }
         },
       ),
